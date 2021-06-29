@@ -1,0 +1,1 @@
+mongodb://dbuser:dbpwd@18.213.176.85:27017/?authSource=books_db&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false

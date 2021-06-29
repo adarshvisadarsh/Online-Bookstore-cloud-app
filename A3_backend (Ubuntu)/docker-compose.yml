@@ -1,0 +1,29 @@
+version: '3'
+services:
+  notes:
+    build: notes_service
+    command: python notes_service/notes.py
+    volumes:
+      - .:/notes
+    ports:
+      - "7000:7000"
+    expose:
+      - 7000
+  search:
+    build: search_service
+    command: python search_service/search.py
+    volumes:
+      - .:/search
+    ports:
+      - "5000:5000"
+    expose:
+      - 5000
+  catalogue:
+    build: catalogue_service
+    command: python catalogue_service/catalogue.py
+    volumes:
+      - .:/catalogue
+    ports:
+      - "6000:6000"
+    expose:
+      - 6000

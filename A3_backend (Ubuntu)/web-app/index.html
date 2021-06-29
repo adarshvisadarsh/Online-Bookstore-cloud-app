@@ -1,0 +1,206 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="author" content="colorlib.com">
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" />
+  <link href="static/css/main.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <title>Online Book keeping</title>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      document.getElementById("add-note-btn").addEventListener("click", function () {
+        var newnote = prompt("Add a Note?");
+        if (newnote.length > 0 && newnote.trim() != "") {
+          addnotes(newnote);
+        } else {
+          swal("Bad Entry! Try again.");
+        }
+      })
+    });
+
+    function scrollFunction() {
+      if (documentElement.scrollTop > 20 || documentElement.scrollTop > 20) {
+        document.getElementById("navbar").style.top = "0";
+      } else {
+        document.getElementById("navbar").style.top = "-150px";
+      }
+    }
+
+    function addBookItem(book_str) {
+      var ul = document.getElementById("dynamic-list");
+      var li = document.createElement("li");
+      li.appendChild(document.createTextNode(book_str));
+      ul.appendChild(li);
+    }
+
+    function addNoteItem(note_str) {
+      var ul = document.getElementById("dynamic-list2");
+      var li = document.createElement("li");
+      li.appendChild(document.createTextNode(note_str));
+      ul.appendChild(li);
+    }
+
+    function showdata(data) {
+      var ul = document.getElementById("dynamic-list");
+      ul.innerHTML = '';
+      for (x in data) {
+        doc = data[x];
+        var bookobj = JSON.parse(doc.toString());
+        var book_str = "title: " + bookobj.title + " author: " + bookobj.title;
+        addBookItem(book_str);
+      }
+    }
+
+    function submitform() {
+      var searchString = document.getElementById("search").value;
+      if (searchString.toString().trim() == "") {
+        swal("Error","Pleae enter a query!","error");
+        return null;
+      }
+      else {
+        var catalog = document.getElementById('tmp');
+        //catalog.style.display = 'block';
+        axios.get('http://127.0.0.1:5000/search?searchString=' + searchString.toString())
+          .then(response => {
+            var h = document.querySelector('h1');
+            h.style.display = 'none';
+            //console.log(response.data);
+            var resdata = response.data;
+            if (resdata.length==0){
+              catalog.style.display = 'none';
+              swal("Error","No data found!","error");
+              return null;
+            }
+            catalog.style.display = 'block';
+            showdata(resdata);
+            var btndiv = document.getElementById('btngroup');
+            btndiv.style.display = 'block';
+          })
+          .catch(error => {
+            swal("Error!","Connection Error","error");
+          });
+      }
+    }
+
+    function populateNotes(data) {
+      var ul = document.getElementById("dynamic-list2");
+      ul.innerHTML = '';
+      for (x in data) {
+        doc = data[x];
+        addNoteItem(doc['note'].toString());
+      }
+    }
+
+    function addnotes(n) {
+      var searchString = document.getElementById("search").value;
+      if (searchString == "") {
+        swal("Empty Query","Empty notes!","error");
+        return;
+      }
+      viewnotes()
+      addNoteItem(n.toString());
+      axios.get('http://127.0.0.1:5000/addNote?searchString=' + searchString.toString() + '&note=' + n.toString())
+        .then(response => {
+          // console.log(response.data);
+          var resdata = response.data;
+          // console.log('Note Addition: Success!');
+          viewnotes()
+        })
+        .catch(error => {
+          // console.log('Note Addition: Failure. Error: ' + error);
+        });
+    }
+
+    function viewnotes() {
+      var notesSection = document.getElementById("tmp2");
+      //notesSection.style.display = 'block';
+      var searchString = document.getElementById("search").value;
+      if (searchString == "") {
+        swal("Please enter a search query!");
+        return;
+      }
+      axios.get('http://127.0.0.1:5000/findNotes?searchString=' + searchString.toString())
+        .then(response => {
+          // console.log(response.data);
+          var resdata = response.data;
+          if (resdata.length==0){
+            swal("Error","No Notes Found! Pleas add new notes.","error");
+            return null;
+          }
+          notesSection.style.display = 'block';
+          populateNotes(resdata);
+        })
+        .catch(error => {
+
+        });
+    }
+  </script>
+</head>
+
+<body>
+
+  <div class="s008">
+  <h1 style="position: absolute; top: 10%; left:32.5%; font-weight : bold; color: #717211;" >Welcome To Notes-Keeper.</h1>
+    <form onsubmit="return false;">
+      <div class="inner-form">
+        <div class="basic-search">
+          <div class="input-field">
+            <input id="search" type="text" placeholder="Enter Query" onkeydown="if (event.keyCode == 13)
+                                    {submitform();}" />
+
+            <div class="icon-wrap">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                width="20" height="20" viewBox="0 0 20 20">
+                <path
+                  d="M18.869 19.162l-5.943-6.484c1.339-1.401 2.075-3.233 2.075-5.178 0-2.003-0.78-3.887-2.197-5.303s-3.3-2.197-5.303-2.197-3.887 0.78-5.303 2.197-2.197 3.3-2.197 5.303 0.78 3.887 2.197 5.303 3.3 2.197 5.303 2.197c1.726 0 3.362-0.579 4.688-1.645l5.943 6.483c0.099 0.108 0.233 0.162 0.369 0.162 0.121 0 0.242-0.043 0.338-0.131 0.204-0.187 0.217-0.503 0.031-0.706zM1 7.5c0-3.584 2.916-6.5 6.5-6.5s6.5 2.916 6.5 6.5-2.916 6.5-6.5 6.5-6.5-2.916-6.5-6.5z">
+                </path>
+              </svg>
+            </div>
+          </div>
+          <div id="tmp">
+            <nav id="navbar">
+              <ul id="dynamic-list">
+              </ul>
+            </nav>
+          </div>
+          <div id="tmp2" style="margin-top: 366px;">
+            <nav>
+              <ul id="dynamic-list2">
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <div id="btngroup" style="padding: 9px; display: none;margin-top: 310px;">
+        <div>
+          <input type="button" class="btn btn-success" id="add-note-btn" value="Add Notes"/>
+          <input type="button" class="btn btn-info" onclick="viewnotes()" style="margin-left: 5px;" value="View Notes"/>
+        </div>
+      </div>
+    </form>
+    <!-- <div id="btngroup" style="padding: 9px; display: none;">
+      <div>
+        <button class="btn btn-success" id="add-note-btn">Add Notes</button>
+        <button class="btn btn-info" onclick="viewnotes()" style="margin-left: 5px;">View Notes</button>
+      </div>
+    </div> -->
+  </div>
+  <content>
+
+  </content>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+  <script>
+    window.onscroll = function () { scrollFunction() };
+  </script>
+</body>
+
+</html>
